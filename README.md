@@ -34,3 +34,4 @@ This project uses a public news API to fetch real-time technology news articles.
 •	JavaScript (Vanilla JS) – for fetching API data, DOM manipulation, and interactivity
 •	GNews API – for live technology news data
 •	Git & GitHub – for version control and project hosting# News-On-Techs
+# News-On-Techs
