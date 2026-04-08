@@ -1,14 +1,49 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tech-news</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Tech News Hub | Latest Technology News</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script src="script.js" ></script>
+    <div class="container">
+      <div class="header">
+        <h1>📰 Tech News Hub</h1>
+        <button id="themeToggle" class="theme-btn">🌙 Dark Mode</button>
+      </div>
+
+      <div class="controls">
+        <div class="search-group">
+          <label>🔍 SEARCH ARTICLES</label>
+          <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="e.g., AI, SpaceX, Cybersecurity..." autocomplete="off" />
+            <button id="searchBtn">Search</button>
+          </div>
+        </div>
+        <div class="sort-group">
+          <label>📊 SORT BY</label>
+          <select id="sortSelect">
+            <option value="newest">🕒 Newest First</option>
+            <option value="oldest">📅 Oldest First</option>
+            <option value="alpha-asc">🔤 A → Z</option>
+            <option value="alpha-desc">🔤 Z → A</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>⚡ FILTERS</label>
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="liked">❤️ Liked</button>
+          <button class="filter-btn" data-filter="favourited">⭐ Favourited</button>
+        </div>
+      </div>
+
+      <div id="statsBar" class="stats-bar">Loading articles...</div>
+      <div id="loader" class="loader hidden">📡 Fetching latest tech news...</div>
+      <div id="errorMsg" class="error-msg hidden">⚠️ Failed to load news. Please check your connection or try again later.</div>
+      <div id="root" class="articles-grid"></div>
+    </div>
+
+    <script src="script.js"></script>
   </body>
-  
 </html>
