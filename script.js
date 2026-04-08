@@ -1,5 +1,4 @@
 const API_KEY = "343c66a344734376a0e964a8edb3e27b";
-const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 
 const root = document.getElementById("root");
 const loader = document.getElementById("loader");
@@ -16,67 +15,67 @@ let favourites = {};
 let activeFilter = "all";
 
 function buildUrl(query) {
-    return `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&apiKey=${API_KEY}&pageSize=100&language=en`;
+  return `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&apiKey=${API_KEY}&pageSize=100&language=en`;
 }
 
 function formatDate(dateStr) {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-    });
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function showLoader(state) {
-    loader.classList.toggle("hidden", !state);
+  loader.classList.toggle("hidden", !state);
 }
 
 function showError(state, message = "⚠️ Failed to load news. Please check your connection or try again later.") {
-    errorMsg.textContent = message;
-    errorMsg.classList.toggle("hidden", !state);
+  errorMsg.textContent = message;
+  errorMsg.classList.toggle("hidden", !state);
 }
 
 function getProcessedArticles() {
-    const query = searchInput.value.trim().toLowerCase();
+  const query = searchInput.value.trim().toLowerCase();
 
-    const searched = allArticles.filter((art) =>
-        [art.title, art.description, art.source?.name]
-            .filter(Boolean)
-            .some((field) => field.toLowerCase().includes(query))
-    );
+  const searched = allArticles.filter((art) =>
+    [art.title, art.description, art.source?.name]
+      .filter(Boolean)
+      .some((field) => field.toLowerCase().includes(query))
+  );
 
-    const sortValue = sortSelect.value;
-    const sorted = searched.sort((a, b) => {
-        if (sortValue === "newest") return new Date(b.publishedAt) - new Date(a.publishedAt);
-        if (sortValue === "oldest") return new Date(a.publishedAt) - new Date(b.publishedAt);
-        if (sortValue === "alpha-asc") return (a.title || "").localeCompare(b.title || "");
-        if (sortValue === "alpha-desc") return (b.title || "").localeCompare(a.title || "");
-        return 0;
-    });
+  const sortValue = sortSelect.value;
+  const sorted = searched.sort((a, b) => {
+    if (sortValue === "newest") return new Date(b.publishedAt) - new Date(a.publishedAt);
+    if (sortValue === "oldest") return new Date(a.publishedAt) - new Date(b.publishedAt);
+    if (sortValue === "alpha-asc") return (a.title || "").localeCompare(b.title || "");
+    if (sortValue === "alpha-desc") return (b.title || "").localeCompare(a.title || "");
+    return 0;
+  });
 
-    const filtered = sorted.filter((art) => {
-        const id = art.url;
-        if (activeFilter === "liked") return !!likes[id];
-        if (activeFilter === "favourited") return !!favourites[id];
-        return true;
-    });
+  const filtered = sorted.filter((art) => {
+    const id = art.url;
+    if (activeFilter === "liked") return !!likes[id];
+    if (activeFilter === "favourited") return !!favourites[id];
+    return true;
+  });
 
-    return filtered;
+  return filtered;
 }
 
 function buildCard(art) {
-    const id = art.url;
-    const isLiked = !!likes[id];
-    const isFav = !!favourites[id];
+  const id = art.url;
+  const isLiked = !!likes[id];
+  const isFav = !!favourites[id];
 
-    const div = document.createElement("div");
-    div.className = "article";
+  const div = document.createElement("div");
+  div.className = "article";
 
-    const imageHTML = art.urlToImage
-        ? `<img class="article-image" src="${art.urlToImage}" alt="${art.title || ""}" loading="lazy" onerror="this.outerHTML='<div class=image-placeholder>📰</div>'" />`
-        : `<div class="image-placeholder">📰</div>`;
+  const imageHTML = art.urlToImage
+    ? `<img class="article-image" src="${art.urlToImage}" alt="${art.title || ""}" loading="lazy" onerror="this.outerHTML='<div class=image-placeholder>📰</div>'" />`
+    : `<div class="image-placeholder">📰</div>`;
 
-    div.innerHTML = `
+  div.innerHTML = `
     ${imageHTML}
     <div class="article-body">
       <span class="article-source">${art.source?.name || "Unknown"}</span>
@@ -97,116 +96,121 @@ function buildCard(art) {
     </div>
   `;
 
-    div.querySelector(".like-btn").addEventListener("click", () => {
-        likes[id] = !likes[id];
-        renderArticles();
-    });
+  div.querySelector(".like-btn").addEventListener("click", () => {
+    likes[id] = !likes[id];
+    renderArticles();
+  });
 
-    div.querySelector(".fav-btn").addEventListener("click", () => {
-        favourites[id] = !favourites[id];
-        renderArticles();
-    });
+  div.querySelector(".fav-btn").addEventListener("click", () => {
+    favourites[id] = !favourites[id];
+    renderArticles();
+  });
 
-    return div;
+  return div;
 }
 
 function renderArticles() {
-    root.innerHTML = "";
-    const articles = getProcessedArticles();
+  root.innerHTML = "";
+  const articles = getProcessedArticles();
 
-    const likedCount = allArticles.filter((a) => likes[a.url]).length;
-    const favCount = allArticles.filter((a) => favourites[a.url]).length;
+  const likedCount = allArticles.filter((a) => likes[a.url]).length;
+  const favCount = allArticles.filter((a) => favourites[a.url]).length;
 
-    statsBar.textContent = `${articles.length} article${articles.length !== 1 ? "s" : ""} shown out of ${allArticles.length} total · ❤️ ${likedCount} liked · ⭐ ${favCount} favourited`;
+  statsBar.textContent = `${articles.length} article${articles.length !== 1 ? "s" : ""} shown out of ${allArticles.length} total · ❤️ ${likedCount} liked · ⭐ ${favCount} favourited`;
 
-    if (articles.length === 0) {
-        root.innerHTML = `<p class="no-results">📭 No articles found. Try a different keyword or clear filters.</p>`;
-        return;
-    }
+  if (articles.length === 0) {
+    root.innerHTML = `<p class="no-results">📭 No articles found. Try a different keyword or clear filters.</p>`;
+    return;
+  }
 
-    articles
-        .map((art, i) => {
-            const card = buildCard(art);
-            card.style.animationDelay = `${Math.min(i * 0.03, 0.4)}s`;
-            return card;
-        })
-        .forEach((card) => root.appendChild(card));
+  articles
+    .map((art, i) => {
+      const card = buildCard(art);
+      card.style.animationDelay = `${Math.min(i * 0.03, 0.4)}s`;
+      return card;
+    })
+    .forEach((card) => root.appendChild(card));
 }
 
 function loadNews(query) {
-    showLoader(true);
-    showError(false);
-    root.innerHTML = "";
-    statsBar.textContent = "🔄 Fetching latest technology news (up to 100 articles)...";
+  showLoader(true);
+  showError(false);
+  root.innerHTML = "";
+  statsBar.textContent = "🔄 Fetching latest technology news (up to 100 articles)...";
 
-    const fullUrl = buildUrl(query);
-    const proxiedUrl = CORS_PROXY + encodeURIComponent(fullUrl);
+  const fullUrl = buildUrl(query);
 
-    fetch(proxiedUrl)
-        .then((response) => {
-            if (!response.ok) throw new Error("Network response was not ok");
-            return response.json();
-        })
-        .then((data) => {
-            showLoader(false);
-            if (data.status !== "ok" || !data.articles) {
-                throw new Error("Bad API response: " + (data.message || "unknown error"));
-            }
-            allArticles = data.articles.filter(
-                (art) => art.title && art.title !== "[Removed]" && art.title !== null
-            );
-            likes = {};
-            favourites = {};
-            activeFilter = "all";
-            document.querySelectorAll(".filter-btn").forEach((btn) => {
-                btn.classList.remove("active");
-                if (btn.dataset.filter === "all") btn.classList.add("active");
-            });
-            searchInput.value = "";
-            renderArticles();
-            console.log(`Loaded ${allArticles.length} articles (API returned ${data.articles.length} total)`);
-        })
-        .catch((error) => {
-            console.error("Error fetching news:", error);
-            showLoader(false);
-            showError(true, `⚠️ Failed to load articles: ${error.message}. Please try again later.`);
-            statsBar.textContent = "⚠️ Failed to load articles. Check console for details.";
-        });
+  fetch(fullUrl)
+    .then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    })
+    .then((data) => {
+      showLoader(false);
+      if (data.status !== "ok" || !data.articles) {
+        throw new Error("Bad API response: " + (data.message || "unknown error"));
+      }
+      allArticles = data.articles.filter(
+        (art) => art.title && art.title !== "[Removed]" && art.title !== null
+      );
+      likes = {};
+      favourites = {};
+      activeFilter = "all";
+      document.querySelectorAll(".filter-btn").forEach((btn) => {
+        btn.classList.remove("active");
+        if (btn.dataset.filter === "all") btn.classList.add("active");
+      });
+      searchInput.value = "";
+      renderArticles();
+      console.log(`Loaded ${allArticles.length} articles (API returned ${data.articles.length} total)`);
+    })
+    .catch((error) => {
+      console.error("Error fetching news:", error);
+      showLoader(false);
+      let errorMessage = "⚠️ Failed to load articles. ";
+      if (error.message.includes("CORS") || error.message.includes("blocked")) {
+        errorMessage += "CORS policy blocked the request. Try using a CORS proxy or run this on a server with proper headers.";
+      } else {
+        errorMessage += error.message;
+      }
+      showError(true, errorMessage);
+      statsBar.textContent = "⚠️ Failed to load articles. Check console for details.";
+    });
 }
 
 searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        e.preventDefault();
-        if (allArticles.length > 0) renderArticles();
-    }
+  if (e.key === "Enter") {
+    e.preventDefault();
+    if (allArticles.length > 0) renderArticles();
+  }
 });
 
 searchInput.addEventListener("input", () => {
-    if (allArticles.length > 0) renderArticles();
+  if (allArticles.length > 0) renderArticles();
 });
 
 searchBtn.addEventListener("click", () => {
-    if (allArticles.length > 0) renderArticles();
+  if (allArticles.length > 0) renderArticles();
 });
 
 sortSelect.addEventListener("change", () => {
-    renderArticles();
+  renderArticles();
 });
 
 document.querySelectorAll(".filter-btn").forEach((btn) => {
-    btn.addEventListener("click", function () {
-        document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
-        this.classList.add("active");
-        activeFilter = this.dataset.filter;
-        renderArticles();
-    });
+  btn.addEventListener("click", function () {
+    document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+    this.classList.add("active");
+    activeFilter = this.dataset.filter;
+    renderArticles();
+  });
 });
 
 themeToggle.addEventListener("click", () => {
-    const html = document.documentElement;
-    const isDark = html.getAttribute("data-theme") === "dark";
-    html.setAttribute("data-theme", isDark ? "light" : "dark");
-    themeToggle.textContent = isDark ? "🌙 Dark Mode" : "☀️ Light Mode";
+  const html = document.documentElement;
+  const isDark = html.getAttribute("data-theme") === "dark";
+  html.setAttribute("data-theme", isDark ? "light" : "dark");
+  themeToggle.textContent = isDark ? "🌙 Dark Mode" : "☀️ Light Mode";
 });
 
 loadNews("technology");
