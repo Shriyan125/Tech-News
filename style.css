@@ -302,7 +302,6 @@ button:hover {
   line-height: 1.4;
   color: var(--text-primary);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -312,7 +311,6 @@ button:hover {
   color: var(--text-secondary);
   margin-bottom: 0.75rem;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.5;
