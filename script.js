@@ -14,6 +14,29 @@ let likes = {};
 let favourites = {};
 let activeFilter = "all";
 
+// ---------- PROXY CONFIGURATION (Fixes 426 Error on deployment) ----------
+// Only use proxy when not on localhost to keep local development fast
+const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const USE_PROXY = !isLocalhost;
+
+// Free & reliable CORS proxy (allorigins.win returns raw response)
+const PROXY_URL = "https://api.allorigins.win/raw?url=";
+
+/**
+ * Returns the final URL to fetch.
+ * - If proxy is needed, wraps the original URL with the CORS proxy.
+ * - Otherwise returns the original URL.
+ */
+function getProxiedUrl(originalUrl) {
+  if (USE_PROXY) {
+    console.log("🔄 Using CORS proxy for deployment");
+    return PROXY_URL + encodeURIComponent(originalUrl);
+  }
+  console.log("✅ Direct fetch (localhost mode)");
+  return originalUrl;
+}
+// -------------------------------------------------------------------------
+
 function buildUrl(query) {
   return `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&apiKey=${API_KEY}&pageSize=100&language=en`;
 }
@@ -138,11 +161,12 @@ function loadNews(query) {
   root.innerHTML = "";
   statsBar.textContent = "🔄 Fetching latest technology news (up to 100 articles)...";
 
-  const fullUrl = buildUrl(query);
+  const originalUrl = buildUrl(query);
+  const finalUrl = getProxiedUrl(originalUrl);
 
-  fetch(fullUrl)
+  fetch(finalUrl)
     .then((response) => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status} — ${response.statusText}`);
       return response.json();
     })
     .then((data) => {
@@ -162,14 +186,16 @@ function loadNews(query) {
       });
       searchInput.value = "";
       renderArticles();
-      console.log(`Loaded ${allArticles.length} articles (API returned ${data.articles.length} total)`);
+      console.log(`✅ Loaded ${allArticles.length} articles (API returned ${data.articles.length} total)`);
     })
     .catch((error) => {
-      console.error("Error fetching news:", error);
+      console.error("❌ Error fetching news:", error);
       showLoader(false);
       let errorMessage = "⚠️ Failed to load articles. ";
-      if (error.message.includes("CORS") || error.message.includes("blocked")) {
-        errorMessage += "CORS policy blocked the request. Try using a CORS proxy or run this on a server with proper headers.";
+      if (error.message.includes("CORS") || error.message.includes("blocked") || error.message.includes("426")) {
+        errorMessage += "CORS or proxy issue. The proxy service might be temporarily unavailable. Try again later or use a different network.";
+      } else if (error.message.includes("HTTP 426")) {
+        errorMessage += "HTTP 426 Upgrade Required error — using proxy to bypass. If the problem persists, the proxy service may be down.";
       } else {
         errorMessage += error.message;
       }
@@ -213,4 +239,5 @@ themeToggle.addEventListener("click", () => {
   themeToggle.textContent = isDark ? "🌙 Dark Mode" : "☀️ Light Mode";
 });
 
+// Load initial news with proxy protection
 loadNews("technology");

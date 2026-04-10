@@ -319,7 +319,7 @@ button:hover {
 .article-date {
   font-size: 0.7rem;
   color: var(--text-muted);
-  display: block;
+  display: block
 }
 
 .article-footer {
